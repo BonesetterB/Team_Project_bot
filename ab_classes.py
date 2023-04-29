@@ -80,7 +80,7 @@ class Adres(Field):
 
 class Phone(Field):
     min_len = 8
-    max_len = 13
+    max_len = 17
 
     @property
     def value(self):
@@ -88,7 +88,7 @@ class Phone(Field):
 
     @value.setter
     def value(self, number):
-        number = re.sub('\D+', '', number)
+        number = re.sub("[^\d]+", "", number)
         if len(number) == 12:
             number = "+" + number
         elif len(number) == 10:
