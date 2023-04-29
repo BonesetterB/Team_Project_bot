@@ -2,7 +2,7 @@ from ab_classes import Name, Phone, Email, Birthday, Record, AddressBook, Adres
 from functools import wraps
 from pathlib import Path
 import re
-
+import spacy
 
 PAGE = 10
 DB_FILE_NAME = "phonebook.bin"
@@ -238,14 +238,14 @@ COMMANDS = {
     "hello": greet,
     "add email": add_email,
     "add b_day": add_birthday,
-    "add adres":add_adres,
+    "add address":add_adres,
     "add": add,
     "congrat": congrat,
     "change": change,
     "phone": phone,
     "show all": show_all,
     "search": search,
-    "del adres":del_adres,
+    "del address":del_adres,
     "del phone": del_phone,
     "del b_day": del_birthday,
     "del email": del_email,
@@ -259,11 +259,11 @@ COMMANDS = {
 
 @input_error
 def command_parser(line: str):
+    nlp = spacy.load('en_core_web_md')
     line_prep = " ".join(line.split())
     for k, v in COMMANDS.items():
         if line_prep.lower().startswith(k + " ") or line_prep.lower() == k:
-            return v, re.sub(k, "", line_prep, flags=re.IGNORECASE).strip().rsplit(
-                " ")
+            return v, re.sub(k, "", line_prep, flags=re.IGNORECASE).strip().rsplit(" ")
     return no_command, []
 
 
