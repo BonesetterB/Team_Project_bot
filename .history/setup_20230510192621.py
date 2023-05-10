@@ -5,7 +5,7 @@ with open("README.md", "r") as f:
 
 setup(
     name="MemoMind",
-    version="1.0.6",
+    version="1.0.5",
     author="Code Cobras",
     author_email="camyray1992@gmail.com",
     description="Personal Assistant Bot",
@@ -18,7 +18,7 @@ setup(
         "Operating System :: OS Independent",
     ],
     python_requires=">=3.6",
-    install_requires=["pyttsx3==2.4"],
+    install_requires=["pyttsx3==2.40"],
     entry_points={"console_scripts": ["memo = memomind.main:main"]},
     include_package_data=True
 )
