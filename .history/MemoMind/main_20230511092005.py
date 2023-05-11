@@ -1,4 +1,4 @@
-from memomind.ab_classes import (
+from ab_classes import (
     Name,
     Phone,
     Email,
@@ -14,7 +14,7 @@ import json
 import os
 from pathlib import Path
 import pyttsx3
-from memomind.notebook import (
+from notebook import (
     WITH_NOTES,
     add_note,
     add_tag,
@@ -25,7 +25,7 @@ from memomind.notebook import (
     del_note,
 )
 import re
-import memomind.sort_folder
+import sort_folder
 
 
 PAGE = 10
@@ -611,8 +611,9 @@ def main():
             "MemoMind \n",
             f"Доступні команди: {', '.join(k for k in COMMANDS.keys())}",
         )
-    load_data(book1, notebook)
-    while not is_ended:   
+
+    while not is_ended:
+        load_data(book1, notebook)
         s = input(">>>")
         command, args = command_parser(s)
         if languages:

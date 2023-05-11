@@ -1,4 +1,4 @@
-from memomind.ab_classes import (
+from ab_classes import (
     Name,
     Phone,
     Email,
@@ -611,8 +611,9 @@ def main():
             "MemoMind \n",
             f"Доступні команди: {', '.join(k for k in COMMANDS.keys())}",
         )
-    load_data(book1, notebook)
-    while not is_ended:   
+
+    while not is_ended:
+        load_data(book1, notebook)
         s = input(">>>")
         command, args = command_parser(s)
         if languages:

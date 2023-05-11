@@ -1,4 +1,4 @@
-from memomind.ab_classes import (
+from ab_classes import (
     Name,
     Phone,
     Email,
@@ -14,7 +14,7 @@ import json
 import os
 from pathlib import Path
 import pyttsx3
-from memomind.notebook import (
+from notebook import (
     WITH_NOTES,
     add_note,
     add_tag,
@@ -25,7 +25,7 @@ from memomind.notebook import (
     del_note,
 )
 import re
-import memomind.sort_folder
+import sort_folder
 
 
 PAGE = 10
@@ -457,7 +457,7 @@ def search(book: AddressBook, *args):
 @input_error
 def sort_targ_folder(book: AddressBook, *args):
     target_path = " ".join(args)
-    return memomind.sort_folder.main(target_path)
+    return sort_folder.main(target_path)
 
 
 def voice(content, *yes):

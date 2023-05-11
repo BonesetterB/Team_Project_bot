@@ -204,12 +204,12 @@ def show_notes(notebook: NotePad, *args):
         tags = ", ".join(str(tag) for tag in note.tag_list)
         if languages:
             line += (
-                f'{tags} creation date: {note.day.strftime("%d-%m-%Y")}. Content: {str(note)}.Status {f"done. Date done {note.done_date}"if note.done else "not done"}'
+                f'{tags} creation date: {note.day.strftime("%d-%m-%Y")}.Content: {str(note)}.Status {f"done.Date done {note.done_date}"if note.done else "not done"}'
                 + "\n"
             )
         else:
             line += (
-                f'{tags} дата створення: {note.day.strftime("%d-%m-%Y")}.Зміст: {str(note)}.Статус {f"виконано. Дата виконання {note.done_date}"if note.done else "не виконано"}'
+                f'{tags} дата створення: {note.day.strftime("%d-%m-%Y")}.Зміст: {str(note)}.Статус {f"виконано.Дата виконання {note.done_date}"if note.done else "не виконано"}'
                 + "\n"
             )
     if languages:
