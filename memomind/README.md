@@ -1,4 +1,4 @@
-Bot "MemoMind 1.0.9".
+Bot "MemoMind 1.1.0".
 This bot is used to store important information such as a phone book, as well as a list of notes/tasks with hashtags and some other useful functions. Basic commands (all commands are case-insensitive):
 
 - HELLO: welcomes the user
