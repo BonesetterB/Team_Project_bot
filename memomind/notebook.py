@@ -9,6 +9,7 @@ dir_path = os.path.dirname(__file__)
 with open(os.path.join(dir_path, "config.JSON")) as cfg:
     cfg_data = json.load(cfg)
     languages = True if cfg_data["Language"] == "eng" else False
+    PAGE = cfg_data["Page"]
 
 
 def input_error(func):
@@ -58,7 +59,7 @@ def add_tag(notebook: NotePad, note, tag):
             raise ValueError("Enter  first_letters_of_the_note... #tag")
         else:
             raise ValueError("Введіть перші_літери_нотатки... #тег")
-    rec = quick_note(notebook, note)
+    rec = quick_note_list(notebook, note)
     rec.add_tag(HashTag(tag))
     notebook.sorting()
     if languages:
@@ -69,29 +70,31 @@ def add_tag(notebook: NotePad, note, tag):
 
 @input_error
 def change_note(notebook: NotePad, *args):
-    text = f'{" ".join(args)}'
-    if not text:
+    if not args:
         if languages:
             raise ValueError("enter part of the note text")
         else:
-            raise ValueError("введіть частину тексту нотатки")
-    old_note, new_note = text.split("... ")
-    if old_note.startswith("#"):
-        record = quick_tag(notebook, old_note)
-        old_note = record
+            raise ValueError("введіть частину тексту нотатки")      
+    search_word = args[0]
+    if search_word.startswith("#"):
+        record = quick_tag(notebook, search_word)
+        new_note = f'{" ".join(args)}'
+        new_note = new_note.replace(f'{search_word} ', "")
         if record:
             notebook.change_note(record, new_note)
             if languages:
-                return f'"{old_note}" changed to "{new_note}"'
+                return f'Note changed to "{new_note}"'
             else:
-                return f'"{old_note}" змінено на "{new_note}"'
-    record = quick_note(notebook, old_note)
+                return f'Запис змінено на "{new_note}"'
+    text = f'{" ".join(args)}'
+    old_note, new_note = text.split("... ")
+    record = quick_note_list(notebook, old_note)
     if record in notebook.note_list:
         notebook.change_note(record, new_note)
         if languages:
-            return f'"{old_note}" changed to "{new_note}"'
+            return f'Note changed to "{new_note}"'
         else:
-            return f'"{old_note}" змінено на "{new_note}"'
+            return f'Запис змінено на "{new_note}"'
     if languages:
         return f'Record "{record}" not found'
     else:
@@ -109,7 +112,7 @@ def change_note_stat(notebook: NotePad, *args):
                 return f'The status of {record} has been changed to "done"'
             else:
                 return f'Статус нотатки {record} змінено на "виконано"'
-    record = quick_note(notebook, text)
+    record = quick_note_list(notebook, text)
     if record in notebook.note_list:
         notebook.change_status(record)
         if languages:
@@ -139,7 +142,7 @@ def del_note(notebook: NotePad, *args):
                 return f'"{record}" deleted successfully'
             else:
                 return f'"{record}" видалений успішно'
-    record = quick_note(notebook, text)
+    record = quick_note_list(notebook, text)
     if record in notebook.note_list:
         notebook.delete(record)
         notebook.sorting()
@@ -219,20 +222,69 @@ def show_notes(notebook: NotePad, *args):
 
 
 def quick_tag(notebook: NotePad, text: str):
+    note_list = []
     for note in notebook.note_list:
         for tag in note.tag_list:
             if str(text) in str(tag):
-                return note
-    return None
+                note_list.append(note)
+    note = quick_choice(note_list)
+    return note
 
-
-def quick_note(notebook: NotePad, text: str):
+def quick_note_list(notebook: NotePad, text: str):
     content = text.replace("...", "")
+    note_list = []
     for note in notebook.note_list:
         if content in str(note):
-            return note
-    record = Note(content)
-    return record
+            note_list.append(note)
+    note = quick_choice(note_list)
+    return note
+
+
+def quick_choice(note_list):
+    note_count = len(note_list)
+    notes_per_iteration = PAGE
+    current_index = 0
+    result = None
+    while current_index < note_count:
+        next_index = current_index + notes_per_iteration
+        notes = note_list[current_index:next_index]
+        if languages:
+            notes_ = "Notes"
+            options = "Options"
+            exit = "Exit"
+            next = "for continue"
+            enter = "Enter your choice"
+            not_found = "Not found"
+        else:
+            notes_ = "Нотатки"
+            options = "Опції"
+            exit = "Вихід"
+            next = "для продовження"
+            enter = "Введіть ваш вибір"
+            not_found = "Не знайдено"
+
+
+        print(f"{notes_} {current_index}-{next_index}:")
+        for i, note in enumerate(notes, start=1):
+            print(f"{i}. {note}")
+
+        print(f'{options}: ')
+        if next_index < note_count:
+            print(f'"next" {next}')
+        print(f'0. {exit}')
+
+        choice =input(f'{enter} ')
+
+        if choice == "next" and next_index < note_count:
+            current_index = next_index
+            continue
+        if int(choice) == 0:
+            break
+        elif int(choice) >= 1:
+            i = int(choice) - 1
+            result = notes[i]
+            break
+    return result if result else f'{not_found}'
 
 
 WITH_NOTES = [
