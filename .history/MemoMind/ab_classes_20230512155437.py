@@ -87,10 +87,10 @@ class NotePad:
                 notes = json.load(db)
         except EOFError:
             pass
-        for rec in notes["notes"]:
-            note = Note("")
-            note.from_dict(rec)
-            self.note_list.append(note)
+            for rec in notes["notes"]:
+                note = Note()
+                note.from_dict(rec)
+                self.note_list.append(note)
                 
     def save_to_file(self, note_file):
         data = []
@@ -418,7 +418,7 @@ class Record:
 
 
 class AddressBook(UserDict):
-    def load_from_file(self, filename) -> None:
+    def load_from_file(self, filename):
         try:
             with open(filename, "r") as db:
                 data = json.load(db)
@@ -435,7 +435,7 @@ class AddressBook(UserDict):
             self.data.update({record.name.value: record})  
             
             
-    def save_to_file(self, filename) -> None:
+    def save_to_file(self, filename):
         data = {}
         for rec in self.data.values():
             phones = [str(phone) for phone in rec.phones]
@@ -451,16 +451,16 @@ class AddressBook(UserDict):
         with open(filename, "w") as db:
             json.dump(data, db)
 
-    def add_record(self, record: Record) -> None:
+    def add_record(self, record: Record):
         self.data.update({record.name.value: record})
 
-    def remove_record(self, contact: str) -> None:
+    def remove_record(self, contact: str):
         return self.data.pop(contact)
 
-    def lening(self) -> int:
+    def lening(self):
         return len(self.data)
 
-    def iterator(self, page) -> str:
+    def iterator(self, page):
         start = 0
         while True:
             output = ""
@@ -471,7 +471,7 @@ class AddressBook(UserDict):
             yield output
             start += page
 
-    def show_all(self) -> str:
+    def show_all(self):
         output = ""
         for contact in self.data.values():
             output += str(contact)

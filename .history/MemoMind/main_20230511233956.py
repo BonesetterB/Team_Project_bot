@@ -28,6 +28,8 @@ import re
 import sort_folder
 
 
+PAGE = 10
+db_file_name = ""
 dir_path = os.path.dirname(__file__)
 
 
@@ -41,7 +43,7 @@ def input_error(func):
         except TypeError as err:
             if func.__name__ == "add_birthday":
                 if languages:
-                    return "enter name and birthday"
+                    return "enter your name and birthday"
                 else:
                     return "введіть ім'я та день народження"
             if func.__name__ == "add_email":
@@ -76,7 +78,7 @@ def greet(*args):
 def add_contact(book: AddressBook, contact: Name, *params):
     @input_error
     def inner_add_contact():
-        contact_l = [contact,]
+        contact_new = Name(contact)
         phone, email, address = None, None, []
         phone_regex = r"^(\+?\d{1,3})? ?(\d{2,3}) ?(\d{2,3}) ?(\d{2}) ?(\d{2})$"
 
@@ -86,31 +88,27 @@ def add_contact(book: AddressBook, contact: Name, *params):
             elif re.match(phone_regex, param):
                 phone = Phone(param)
             else:
-                if i > 1:  #name can be mximum 3 words
+                if i < 3:
                     address.append(param)
-                else:
-                    contact_l.append(param)
-                    
-        contact_str = " ".join(contact_l)
-        contact_new = Name(contact_str)
+
         address_str = " ".join(address)
-        address = Address(address_str) if address_str else "-"
+        address = Address(address_str) if address_str else "_"
         email_display = email.value if email else "-"
-        rec_new = Record(contact_new, phone, email, address if address_str else None)
+        rec_new = Record(contact_new, phone, email, address)
 
         if contact_new.value not in book.keys():
             book.add_record(rec_new)
             if languages:
-                return f"Added contact '{contact}' with phone: {phone if phone else '-'}, email: {email_display} and address: {address}"
+                return f"Added contact '{contact}' with phone: {phone}, email: {email_display} and address: {address}"
             else:
-                return f"Додано контакт '{contact}' з телефоном: {phone if phone else '-'}, електронною поштою: {email_display} та адресою: {address}"
+                return f"Додано контакт '{contact}' з телефоном: {phone}, електронною поштою: {email_display} та адресою: {address}"
         else:
             rec = book.get(contact)
             if phone:
                 rec.add_phone(phone)
             if email:
                 rec.add_email(email)
-            if address_str:
+            if address:
                 rec.add_address(address)
             if languages:
                 return f"Added phone number: {phone}, email: {email} and address: {address} for existing contact '{contact}'"
@@ -121,11 +119,11 @@ def add_contact(book: AddressBook, contact: Name, *params):
 
 
 @input_error
-def add_address(book: AddressBook, contact: str, *address):
-    x = " ".join(address)
+def add_address(book: AddressBook, contact: str, *adress):
+    x = " ".join(adress)
     address_new = Address(x)
     rec = book.get(contact)
-    rec.add_address(address_new)
+    rec.add_adress(address_new)
     if languages:
         return f'Added address: {x} for existing contact "{contact}"'
     else:
@@ -282,7 +280,7 @@ def change_address(book: AddressBook, contact: str, *address):
     address_new = Address(x)
     rec = book.get(contact)
 
-    if not rec.address:
+    if not rec.adress:
         if not x:
             if languages:
                 address_new = Address(
@@ -307,7 +305,7 @@ def change_address(book: AddressBook, contact: str, *address):
                 address_new = Address(input(voice("Будь ласка, введіть нову адресу:")))
         else:
             address_new = Address(x)
-        old_address = rec.address
+        old_address = rec.adress
         rec.change_address(address_new)
         if languages:
             return f'Changed address {old_address} to {address_new} for contact "{contact}"'
@@ -371,7 +369,7 @@ def del_birthday(book: AddressBook, *args):
 def del_address(book: AddressBook, *args):
     contact = " ".join(args)
     rec = book.get(contact)
-    rec.address = None
+    rec.adress = None
     if languages:
         return f"Contact {contact}, address deleted"
     else:
@@ -379,17 +377,15 @@ def del_address(book: AddressBook, *args):
 
 
 def load_data(book1: AddressBook, notebook: NotePad):
-    global db_file_name, note_file_name, PAGE, languages
+    global db_file_name, note_file_name, PAGE
     with open(os.path.join(dir_path, "config.JSON")) as cfg:
         cfg_data = json.load(cfg)
         db_file_name = os.path.join(dir_path, cfg_data["PhoneBookFile"])
         note_file_name = os.path.join(dir_path, cfg_data["NoteBookFile"])
         PAGE = cfg_data["Page"]
-        languages = True if cfg_data["Language"] == "eng" else False
-        
+
     if Path(db_file_name).exists():
         book1.load_from_file(db_file_name)
-    if Path(note_file_name).exists():
         notebook.load_from_file(note_file_name)
     pass
 
@@ -600,10 +596,12 @@ languages = True  # True=En, False=Ukraine
 
 
 def main():
-    
+    global languages
+    with open(os.path.join(dir_path, "config.JSON")) as cfg:
+        cfg_data = json.load(cfg)
+        languages = True if cfg_data["Language"] == "eng" else False
     book1 = AddressBook()
     notebook = NotePad()
-    load_data(book1, notebook)
     if languages:
         print(
             "MemoMind \n",
@@ -614,7 +612,7 @@ def main():
             "MemoMind \n",
             f"Доступні команди: {', '.join(k for k in COMMANDS.keys())}",
         )
-    
+    load_data(book1, notebook)
     while not is_ended:   
         s = input(">>>")
         command, args = command_parser(s)

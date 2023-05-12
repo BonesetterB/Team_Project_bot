@@ -28,6 +28,8 @@ import re
 import sort_folder
 
 
+PAGE = 10
+db_file_name = ""
 dir_path = os.path.dirname(__file__)
 
 

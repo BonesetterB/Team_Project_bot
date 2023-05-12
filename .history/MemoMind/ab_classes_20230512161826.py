@@ -87,10 +87,10 @@ class NotePad:
                 notes = json.load(db)
         except EOFError:
             pass
-        for rec in notes["notes"]:
-            note = Note("")
-            note.from_dict(rec)
-            self.note_list.append(note)
+            for rec in notes["notes"]:
+                note = Note()
+                note.from_dict(rec)
+                self.note_list.append(note)
                 
     def save_to_file(self, note_file):
         data = []

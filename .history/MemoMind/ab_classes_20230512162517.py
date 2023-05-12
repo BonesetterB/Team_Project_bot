@@ -88,7 +88,7 @@ class NotePad:
         except EOFError:
             pass
         for rec in notes["notes"]:
-            note = Note("")
+            note = Note()
             note.from_dict(rec)
             self.note_list.append(note)
                 

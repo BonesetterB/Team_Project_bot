@@ -53,15 +53,15 @@ class Note:
                 "done":self.done,
                 "done_date":datetime.strftime(self.done_date, "%d.%m.%Y") if self.done_date else None,
                 "text":self.text, 
-                "tag_list":[str(tag) for tag in self.tag_list]}
+                "tag_list":self.tag_list}
         return data
     
     def from_dict(self, data):
         self.day = datetime.strptime(data["day"], "%d.%m.%Y")
         self.done = data["done"]
-        self.done_date = datetime.strptime(data["done_date"], "%d.%m.%Y") if data["done_date"] else None,
+        self.done_date = datetime.strptime(data["done_date"], "%d.%m.%Y")
         self.text = data["text"]
-        self.tag_list = [HashTag(tag) for tag in data["tag_list"]]
+        self.tag_list = data["tag_list"]
 
 class HashTag:
     def __init__(self, tag) -> None:
@@ -83,22 +83,21 @@ class HashTag:
 class NotePad:
     def load_from_file(self, note_file):
         try:
-            with open(note_file, "r") as db:
-                notes = json.load(db)
+            with open(note_file, "rb") as db:
+                data = json.load(db)
         except EOFError:
             pass
-        for rec in notes["notes"]:
-            note = Note("")
-            note.from_dict(rec)
-            self.note_list.append(note)
+            for rec in data:
+                note = Note()
+                note.from_dict(rec)
+                self.note_list.append(note)
                 
     def save_to_file(self, note_file):
         data = []
         for note in self.note_list:
             data.append(note.to_dict())
-        notebook = {"notes":data}
-        with open(note_file, "w") as db:
-            json.dump(notebook, db)
+        with open(note_file, "wb") as db:
+            json.dump(data, db)
 
     note_list = []
 
@@ -418,7 +417,7 @@ class Record:
 
 
 class AddressBook(UserDict):
-    def load_from_file(self, filename) -> None:
+    def load_from_file(self, filename):
         try:
             with open(filename, "r") as db:
                 data = json.load(db)
@@ -435,7 +434,7 @@ class AddressBook(UserDict):
             self.data.update({record.name.value: record})  
             
             
-    def save_to_file(self, filename) -> None:
+    def save_to_file(self, filename):
         data = {}
         for rec in self.data.values():
             phones = [str(phone) for phone in rec.phones]
@@ -451,16 +450,16 @@ class AddressBook(UserDict):
         with open(filename, "w") as db:
             json.dump(data, db)
 
-    def add_record(self, record: Record) -> None:
+    def add_record(self, record: Record):
         self.data.update({record.name.value: record})
 
-    def remove_record(self, contact: str) -> None:
+    def remove_record(self, contact: str):
         return self.data.pop(contact)
 
-    def lening(self) -> int:
+    def lening(self):
         return len(self.data)
 
-    def iterator(self, page) -> str:
+    def iterator(self, page):
         start = 0
         while True:
             output = ""
@@ -471,7 +470,7 @@ class AddressBook(UserDict):
             yield output
             start += page
 
-    def show_all(self) -> str:
+    def show_all(self):
         output = ""
         for contact in self.data.values():
             output += str(contact)

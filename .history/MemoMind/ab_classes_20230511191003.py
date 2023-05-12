@@ -47,21 +47,7 @@ class Note:
 
     def __eq__(self, other):
         return self.text == other.text
-    
-    def to_dict(self) -> dict:
-        data = {"day":datetime.strftime(self.day, "%d.%m.%Y"),
-                "done":self.done,
-                "done_date":datetime.strftime(self.done_date, "%d.%m.%Y") if self.done_date else None,
-                "text":self.text, 
-                "tag_list":[str(tag) for tag in self.tag_list]}
-        return data
-    
-    def from_dict(self, data):
-        self.day = datetime.strptime(data["day"], "%d.%m.%Y")
-        self.done = data["done"]
-        self.done_date = datetime.strptime(data["done_date"], "%d.%m.%Y") if data["done_date"] else None,
-        self.text = data["text"]
-        self.tag_list = [HashTag(tag) for tag in data["tag_list"]]
+
 
 class HashTag:
     def __init__(self, tag) -> None:
@@ -83,22 +69,14 @@ class HashTag:
 class NotePad:
     def load_from_file(self, note_file):
         try:
-            with open(note_file, "r") as db:
-                notes = json.load(db)
+            with open(note_file, "rb") as db:
+                self.note_list = pickle.load(db)
         except EOFError:
             pass
-        for rec in notes["notes"]:
-            note = Note("")
-            note.from_dict(rec)
-            self.note_list.append(note)
-                
+
     def save_to_file(self, note_file):
-        data = []
-        for note in self.note_list:
-            data.append(note.to_dict())
-        notebook = {"notes":data}
-        with open(note_file, "w") as db:
-            json.dump(notebook, db)
+        with open(note_file, "wb") as db:
+            pickle.dump(self.note_list, db)
 
     note_list = []
 
@@ -204,17 +182,11 @@ class Address(Field):
 
     @value.setter
     def value(self, value):
-        if len(value) > 5:
-            self.__value = value
-        else:
-            if languages:
-                raise ValueError("Address string must be at least 5 symbols long")
-            else:
-                raise ValueError("Адреса повинна бцти не меньше 5 символів довжиною")
+        self.__value = value
 
 
 class Phone(Field):
-    min_len = 9
+    min_len = 8
     max_len = 13
 
     @property
@@ -249,7 +221,7 @@ class Record:
         name: Name,
         phone: Phone = None,
         email: Email = None,
-        address: Address = None,
+        adress: Address = None,
         birthday: Birthday = None,
     ):
         self.name = name
@@ -258,14 +230,14 @@ class Record:
             self.phones.append(phone)
         self.birthday = birthday
         self.email = email
-        self.address = address
+        self.adress = adress
 
     def __str__(self):
         if languages:
             line = "{}: Phones: {}; E-mail: {}; Date of birth: {}; Address: {} \n"
         else:
             line = "{}: Телефони: {}; E-mail: {}; Дата народження: {}; Адреса: {} \n"
-        address = self.address if self.address else "-"
+        address = self.adress if self.adress else "-"
         email = self.email if self.email else "-"
         birthday = self.birthday if self.birthday else "-"
         return line.format(
@@ -282,7 +254,7 @@ class Record:
         else:
             line = "{}: Телефони: {}; E-mail: {}; Дата народження: {}; Адреса: {} \n"
         email = self.email if self.email else "-"
-        address = self.address if self.address else "-"
+        address = self.adress if self.adress else "-"
         birthday = self.birthday if self.birthday else "-"
         return line.format(
             self.name,
@@ -321,9 +293,9 @@ class Record:
                 raise IndexError("Цей номер телефону вже існує")
         self.phones.append(phone)
 
-    def add_address(self, adres: Address):
-        if not self.address:
-            self.address = adres
+    def add_adress(self, adres: Address):
+        if not self.adress:
+            self.adress = adres
         else:
             if languages:
                 raise IndexError("Address is already entered")
@@ -383,15 +355,15 @@ class Record:
         self.birthday = new_birthday
 
     def change_address(self, new_address: Address):
-        if not self.address:
-            self.address = new_address
+        if not self.adress:
+            self.adress = new_address
             if languages:
                 return f"Added {new_address}"
             else:
                 return f"Додано адресу {new_address}"
         else:
-            old_address = self.address
-            self.address = new_address
+            old_address = self.adress
+            self.adress = new_address
             if languages:
                 return f"Address is changed from {old_address} to {new_address}"
             else:
@@ -418,49 +390,35 @@ class Record:
 
 
 class AddressBook(UserDict):
-    def load_from_file(self, filename) -> None:
+    def load_from_file(self, filename):
         try:
             with open(filename, "r") as db:
                 data = json.load(db)
         except EOFError:
             pass
         for rec in data:
-            name = Name(data[rec]['name'])
-            email = None if not data[rec]['email'] else Email(data[rec]['email'])
-            address = None if not data[rec]['address'] else Address(data[rec]['address'])
-            birthday = None if not data[rec]['birthday'] else Birthday(data[rec]['birthday'])
-            record  = Record(name, email, address, birthday)
-            for phone in data[rec]['phones']:
-                record.add_phone(phone)
-            self.data.update({record.name.value: record})  
+            record  = Record(rec.name, rec.phones, rec.email, rec.address, rec.birthday)
+        self.data.update({record.name.value: record})  
             
             
-    def save_to_file(self, filename) -> None:
+    def save_to_file(self, filename):
         data = {}
-        for rec in self.data.values():
-            phones = [str(phone) for phone in rec.phones]
-            email = rec.email.value if rec.email is not None else None 
-            address = rec.address.value if rec.address is not None else None
-            birthday = str(rec.birthday.value) if rec.birthday is not None else None
-            data_value = {rec.name.value:{"name":rec.name.value, 
-                                          "phones":phones, 
-                                          "email":email,
-                                          "address":address,
-                                          "birthday":birthday}}
+        for rec in self.data:
+            data_value = {"name":rec.name.value, "phones":rec.phones, "email":rec.email, "address":rec.address, "birthday":rec.birthday}
             data.update(data_value)
         with open(filename, "w") as db:
             json.dump(data, db)
 
-    def add_record(self, record: Record) -> None:
+    def add_record(self, record: Record):
         self.data.update({record.name.value: record})
 
-    def remove_record(self, contact: str) -> None:
+    def remove_record(self, contact: str):
         return self.data.pop(contact)
 
-    def lening(self) -> int:
+    def lening(self):
         return len(self.data)
 
-    def iterator(self, page) -> str:
+    def iterator(self, page):
         start = 0
         while True:
             output = ""
@@ -471,7 +429,7 @@ class AddressBook(UserDict):
             yield output
             start += page
 
-    def show_all(self) -> str:
+    def show_all(self):
         output = ""
         for contact in self.data.values():
             output += str(contact)

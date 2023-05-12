@@ -41,7 +41,7 @@
         ]
     },
     "PhoneBookFile": "phonebook.JSON",
-    "NoteBookFile": "note.JSON",
+    "NoteBookFile": "note.bin",
     "Page": 10,
     "Language": "eng"
 }

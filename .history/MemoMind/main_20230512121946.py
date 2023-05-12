@@ -28,6 +28,8 @@ import re
 import sort_folder
 
 
+PAGE = 10
+db_file_name = ""
 dir_path = os.path.dirname(__file__)
 
 
@@ -379,17 +381,15 @@ def del_address(book: AddressBook, *args):
 
 
 def load_data(book1: AddressBook, notebook: NotePad):
-    global db_file_name, note_file_name, PAGE, languages
+    global db_file_name, note_file_name, PAGE
     with open(os.path.join(dir_path, "config.JSON")) as cfg:
         cfg_data = json.load(cfg)
         db_file_name = os.path.join(dir_path, cfg_data["PhoneBookFile"])
         note_file_name = os.path.join(dir_path, cfg_data["NoteBookFile"])
         PAGE = cfg_data["Page"]
-        languages = True if cfg_data["Language"] == "eng" else False
-        
+
     if Path(db_file_name).exists():
         book1.load_from_file(db_file_name)
-    if Path(note_file_name).exists():
         notebook.load_from_file(note_file_name)
     pass
 
@@ -600,10 +600,12 @@ languages = True  # True=En, False=Ukraine
 
 
 def main():
-    
+    global languages
+    with open(os.path.join(dir_path, "config.JSON")) as cfg:
+        cfg_data = json.load(cfg)
+        languages = True if cfg_data["Language"] == "eng" else False
     book1 = AddressBook()
     notebook = NotePad()
-    load_data(book1, notebook)
     if languages:
         print(
             "MemoMind \n",
@@ -614,7 +616,7 @@ def main():
             "MemoMind \n",
             f"Доступні команди: {', '.join(k for k in COMMANDS.keys())}",
         )
-    
+    load_data(book1, notebook)
     while not is_ended:   
         s = input(">>>")
         command, args = command_parser(s)
